@@ -50,3 +50,13 @@ def init_db():
             conn.exec_driver_sql("ALTER TABLE students ADD COLUMN registration_date DATE")
         if 'photo_path' not in existing_cols:
             conn.exec_driver_sql("ALTER TABLE students ADD COLUMN photo_path VARCHAR")
+        conn.commit()
+
+
+def get_db():
+    """Dependency para obtener sesión de base de datos"""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

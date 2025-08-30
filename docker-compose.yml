@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  eduface:
+    build: .
+    container_name: eduface-app
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - TF_ENABLE_ONEDNN_OPTS=0
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - eduface-network
+
+networks:
+  eduface-network:
+    driver: bridge
+
+volumes:
+  eduface-data:
+  eduface-logs:

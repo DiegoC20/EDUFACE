@@ -4,20 +4,57 @@ __pycache__/
 *.pyo
 *.pyd
 .venv/
+.venv_new/
+.venv_clean/
 venv/
 env/
+*.egg-info/
 
 # VS Code / IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Entorno
 .env
 *.env
+.env.local
+.env.production
 
 # Base de datos local (no subir)
 *.sqlite3
 attendance.sqlite3
+*.db
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+*.cache
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+*.bak
+
+# Modelos de DeepFace (se descargan automáticamente)
+db/ds_model_*.pkl
+db/weights/
+
+# Uploads y media (mantener estructura pero no archivos)
+students/*.jpg
+students/*.png
+students/*.jpeg
+!students/.gitkeep
+
+# Logs de aplicación
+logs/
+*.log
+
+# Build artifacts
+build/
+dist/
 
 # DeepFace: ignorar representaciones / artefactos pesados
 db/**/representations_*.pkl

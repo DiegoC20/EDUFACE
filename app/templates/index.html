@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset='utf-8'/>
+    <meta name='viewport' content='width=device-width, initial-scale=1'/>
+    <meta name="description" content="EDUFACE - Sistema de control de asistencia escolar por reconocimiento facial"/>
+    <title>EDUFACE - Sistema de Asistencia Escolar</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Local Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class='wrap'>
+            <h1>🎓 EDUFACE - Sistema de Asistencia Escolar</h1>
+            <small>Reconocimiento facial automático para control de asistencia estudiantil</small>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class='wrap'>
+        <!-- Navigation Tabs -->
+        <div class='tabs'>
+            <div class='tab active' data-tab='realtime'>📹 Registro en Tiempo Real</div>
+            <div class='tab' data-tab='reports'>📊 Reportes Generales</div>
+            <div class='tab' data-tab='analysis'>📝 Análisis Detallado</div>
+            <div class='tab' data-tab='manage'>🧑‍🏫 Gestión de Estudiantes</div>
+        </div>
+
+        <!-- Tiempo Real Tab -->
+        <section id='realtime' class='card'>
+            <h2>🎯 Reconocimiento Facial en Tiempo Real</h2>
+            <div class='grid2'>
+                <div>
+                    <div class="camBox">
+                        <video id="cam" autoplay playsinline muted></video>
+                        <div id="camOverlay" class="camOverlay">
+                            <div class="camTitle">📹 Cámara de Reconocimiento Facial</div>
+                            <div class="camControls">
+                                <button id="btnStart" style='background:linear-gradient(135deg, #28a745 0%, #20c997 100%);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;'>
+                                    ▶️ Iniciar Control de Asistencia
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="stopRow" class='row' style="justify-content:center;margin-top:12px;display:none">
+                        <button id="btnStop" style='background:linear-gradient(135deg, #dc3545 0%, #c82333 100%);color:#fff;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-weight:600;'>
+                            ⏹️ Detener Control
+                        </button>
+                    </div>
+                    <div id="statusIndicator" class='row' style="justify-content:center;margin-top:8px;display:none">
+                        <div style="padding:8px 16px;background:rgba(75,59,201,0.1);border:1px solid rgba(75,59,201,0.3);border-radius:6px;font-size:14px;color:#4b3bc9;">
+                            <span id="statusText">🔍 Sistema activado - Esperando rostros...</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3>📋 Estudiantes Detectados Hoy</h3>
+                    <div id="recentList" style="max-height:360px;overflow:auto;border:1px solid #eee;border-radius:8px;padding:8px;"></div>
+                </div>
+            </div>
+            
+            <!-- KPIs Tiempo Real -->
+            <h3>📊 Métricas del Día</h3>
+            <div class='kpis'>
+                <div class='kpi'>
+                    <div>Total Hoy</div>
+                    <div id='k_today' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>Puntuales</div>
+                    <div id='k_punctual_today' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>Tardanzas</div>
+                    <div id='k_late_today' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>Ausentes</div>
+                    <div id='k_absent_today' class='num'>-</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reportes Generales Tab -->
+        <section id='reports' class='card' style='display:none'>
+            <h2>📊 Dashboard de Asistencia General</h2>
+            
+            <!-- Filtros -->
+            <div style='background:#f8f9fa;border-radius:12px;padding:20px;margin-bottom:20px;border:1px solid #e9ecef;'>
+                <h3 style='margin:0 0 16px 0;'>🔍 Filtros de Búsqueda</h3>
+                <div class='row' style='margin-bottom:16px;flex-wrap:wrap;gap:12px;'>
+                    <label>Período: 
+                        <select id='period'>
+                            <option value='day'>Día</option>
+                            <option value='week'>Semana</option>
+                            <option value='month'>Mes</option>
+                        </select>
+                    </label>
+                    <label>Grado: 
+                        <select id='grade'>
+                            <option value=''>Todos los grados</option>
+                        </select>
+                    </label>
+                    <label>Sección: 
+                        <select id='section'>
+                            <option value=''>Todas las secciones</option>
+                            <option value='A'>Sección A</option>
+                            <option value='B'>Sección B</option>
+                            <option value='C'>Sección C</option>
+                            <option value='D'>Sección D</option>
+                        </select>
+                    </label>
+                    <button id='btnRefresh' style='background:var(--info);'>🔄 Actualizar Datos</button>
+                </div>
+            </div>
+            
+            <!-- KPIs Generales -->
+            <div class='kpis'>
+                <div class='kpi'>
+                    <div>Total Estudiantes</div>
+                    <div id='k_students' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>Registros</div>
+                    <div id='k_records' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>% Puntualidad</div>
+                    <div id='k_punctual' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>% Tardanzas</div>
+                    <div id='k_late' class='num'>-</div>
+                </div>
+                <div class='kpi'>
+                    <div>% Ausentes</div>
+                    <div id='k_absent' class='num'>-</div>
+                </div>
+            </div>
+            
+            <!-- Gráficos -->
+            <div class='grid2'>
+                <div>
+                    <h3>📈 Tendencia Semanal de Asistencia</h3>
+                    <canvas id='chWeekly' height='120'></canvas>
+                </div>
+                <div>
+                    <h3>📊 Asistencia por Grado (Hoy)</h3>
+                    <canvas id='chGrade' height='120'></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Análisis Detallado Tab -->
+        <section id='analysis' class='card' style='display:none'>
+            <h2>📝 Análisis Detallado y Reportes</h2>
+            
+            <!-- Exportador PDF -->
+            <div style='background:#f8f9fa;border:1px solid #dee2e6;border-radius:12px;padding:20px;margin-bottom:24px;'>
+                <h3 style='margin:0 0 16px 0;'>📋 Exportar Reporte PDF</h3>
+                <div class='grid2' style='gap:16px;margin-bottom:16px;'>
+                    <div class="form-group">
+                        <label>📅 Fecha del Reporte:</label>
+                        <input type='date' id='exportDate' required/>
+                    </div>
+                    <div class="form-group">
+                        <label>🎓 Grado:</label>
+                        <select id='exportGrade'>
+                            <option value=''>Todos los grados</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📚 Sección:</label>
+                        <select id='exportSection'>
+                            <option value=''>Todas las secciones</option>
+                            <option value='A'>Sección A</option>
+                            <option value='B'>Sección B</option>
+                            <option value='C'>Sección C</option>
+                            <option value='D'>Sección D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>✅ Estado de Asistencia:</label>
+                        <select id='exportStatus'>
+                            <option value=''>Todos los estados</option>
+                            <option value='Puntual'>Solo Puntuales</option>
+                            <option value='Tarde'>Solo Tardanzas</option>
+                            <option value='Ausente'>Solo Ausentes</option>
+                        </select>
+                    </div>
+                </div>
+                <button id='btnExportPDF' style='background:var(--danger);padding:12px 24px;'>📄 Generar Reporte PDF</button>
+            </div>
+            
+            <!-- Gráficos de Análisis -->
+            <div class='grid2'>
+                <div>
+                    <h3>👥 Distribución por Género</h3>
+                    <canvas id='chGender' height='120'></canvas>
+                </div>
+                <div>
+                    <h3>⏰ Patrones de Llegada</h3>
+                    <canvas id='chArrival' height='120'></canvas>
+                </div>
+            </div>
+            
+            <!-- Tabla de Registros Recientes -->
+            <h3>📋 Registro Detallado (Últimos 10)</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>👤 Estudiante</th>
+                            <th>🎓 Grado/Sección</th>
+                            <th>📅 Fecha</th>
+                            <th>⏰ Hora</th>
+                            <th>✅ Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tblRecent'></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Gestión de Estudiantes Tab -->
+        <section id='manage' class='card' style='display:none'>
+            <div class='row' style='align-items:center;gap:12px;margin-bottom:20px;'>
+                <h2 style='margin:0'>👥 Gestión de Estudiantes</h2>
+                <button id='btnAddStudent' style='background:var(--success);padding:10px 20px;'>➕ Agregar Nuevo Estudiante</button>
+            </div>
+            
+            <h3>📋 Lista de Estudiantes Registrados</h3>
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>👤 Nombre</th>
+                            <th>🎓 Grado</th>
+                            <th>📚 Sección</th>
+                            <th>👥 Género</th>
+                            <th>📅 Fecha Registro</th>
+                            <th>📷 Foto</th>
+                            <th>⚙️ Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id='tblStudents'></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal Universal -->
+    <div id='modal' class='modal'>
+        <div class='modalContent'>
+            <div id='modalBody'></div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id='deleteConfirmModal' class='modal'>
+        <div class='modalContent'>
+            <h3 style="color: #dc3545; margin-bottom: 20px;">⚠️ Confirmar Eliminación</h3>
+            <p style="margin-bottom: 20px; color: #333;">¿Estás seguro de que deseas eliminar este estudiante?</p>
+            <p style="margin-bottom: 30px; color: #666; font-size: 14px;">Esta acción no se puede deshacer.</p>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button id="cancelDeleteBtn" class="btn-cancel">❌ Cancelar</button>
+                <button id="confirmDeleteBtn" class="btn-confirm-delete">🗑️ Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Global -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Local JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
